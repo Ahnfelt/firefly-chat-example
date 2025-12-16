@@ -1,0 +1,37 @@
+import WebServer from ff:webserver
+import Router
+import WebRoute from ff:webserver
+
+browserMain(system: BrowserSystem): Unit {
+    let message = system.httpClient().get("/hello", []) {_.readText()}
+    system.js()->alert(message)
+}
+
+nodeMain(system: NodeSystem): Unit {
+    let context = RouteContext(system)
+    let handlers = WebRouteHandler(Array.new())
+    Router.handlers(handlers)
+    WebServer.new(system, "0.0.0.0", 8080).listen {request =>
+        if(request.readPath() == "/test") {
+            request.writeHeader("Content-Type", "text/html; charset=UTF-8")
+            request.writeText("<!doctype html>")
+            request.writeText("<script type='module' src='/js/script/script/Main.run.mjs'></script>")
+        } elseIf {request.readPath() == "/hello"} {
+            request.writeHeader("Content-Type", "text/plain; charset=UTF-8")
+            request.writeText("Hello from server!")
+        } elseIf {request.readPath().startsWith("/js/") && !request.readPath().contains("..")} {
+            request.writeHeader("Content-Type", "text/javascript; charset=UTF-8")
+            request.writeText(system.assets().readText(request.readPath()))
+        } elseIf {handlers.handle(request, context)} {
+
+        } else {
+            request.writeStatus("404 Not found")
+        }
+    }
+}
+
+buildMain(system: BuildSystem) {
+    let browserAssets = system.compileForBrowser(["Main.ff"])
+    let assets = AssetSystem.create().addAssets("/js", browserAssets)
+    system.setAssets(assets)
+}
