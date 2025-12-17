@@ -5,7 +5,10 @@ layout(lux: Lux, content: Lux => Unit) {
     lux.div {
         lux.cssClass(layoutCss)
         menu(lux)
-        content(lux)
+        lux.div {
+            lux.cssClass(contentCss)
+            content(lux)
+        }
     }
 }
 
@@ -20,6 +23,10 @@ menu(lux: Lux) {
 layoutCss = CssClass(
     css = [
         Css.display("flex")
+        Css.width("100vw")
+        Css.height("100vh")
+        Css.backgroundColor("#141414")
+        Css.color("#ffffff")
     ]
     nested = []
     keyframes = []
@@ -30,6 +37,17 @@ menuCss = CssClass(
         Css.display("flex")
         Css.flexDirection("column")
         Css.gap("10px")
+        Css.width("200px")
+        Css.backgroundColor("#141414")
+    ]
+    nested = []
+    keyframes = []
+)
+
+contentCss = CssClass(
+    css = [
+        Css.flex("1")
+        Css.backgroundColor("#242424")
     ]
     nested = []
     keyframes = []
