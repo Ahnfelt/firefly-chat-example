@@ -1,5 +1,7 @@
 import Lux from ff:lux
 import Css from ff:lux
+import WebRoute from ff:webserver
+import Router
 
 layout(lux: Lux, content: Lux => Unit) {
     lux.div {
@@ -15,11 +17,13 @@ layout(lux: Lux, content: Lux => Unit) {
 menu(lux: Lux) {
     lux.div {
         lux.cssClass(menuCss)
-        lux.div {
+        lux.add("a") {
+            lux.set("href", Router.frontRoute.toUrl())
             lux.text("New Channel")
         }
-        lux.div {
-            lux.text("Foobar")
+        lux.add("a") {
+            lux.set("href", Router.channelRoute.toUrl("foobar"))
+            lux.text("foobar")
         }
     }
 }
