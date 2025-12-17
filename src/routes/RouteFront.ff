@@ -2,6 +2,7 @@ import Lux from ff:lux
 import WebServer from ff:webserver
 import Router
 import Html
+import Layout
 
 routeModule = SourceLocation.here().directoryAndModule()
 
@@ -17,7 +18,9 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, data: PageData) {
-    lux.div {
-        lux.text("Hello!")
+    Layout.layout(lux) {lux =>
+        lux.div {
+            lux.text("New channel!")
+        }        
     }
 }

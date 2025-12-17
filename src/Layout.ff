@@ -1,0 +1,36 @@
+import Lux from ff:lux
+import Css from ff:lux
+
+layout(lux: Lux, content: Lux => Unit) {
+    lux.div {
+        lux.cssClass(layoutCss)
+        menu(lux)
+        content(lux)
+    }
+}
+
+menu(lux: Lux) {
+    lux.div {
+        lux.cssClass(menuCss)
+        lux.text("New Channel")
+        lux.text("Foobar")
+    }
+}
+
+layoutCss = CssClass(
+    css = [
+        Css.display("flex")
+    ]
+    nested = []
+    keyframes = []
+)
+
+menuCss = CssClass(
+    css = [
+        Css.display("flex")
+        Css.flexDirection("column")
+        Css.gap("10px")
+    ]
+    nested = []
+    keyframes = []
+)
