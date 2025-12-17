@@ -15,8 +15,12 @@ layout(lux: Lux, content: Lux => Unit) {
 menu(lux: Lux) {
     lux.div {
         lux.cssClass(menuCss)
-        lux.text("New Channel")
-        lux.text("Foobar")
+        lux.div {
+            lux.text("New Channel")
+        }
+        lux.div {
+            lux.text("Foobar")
+        }
     }
 }
 
@@ -36,8 +40,9 @@ menuCss = CssClass(
     css = [
         Css.display("flex")
         Css.flexDirection("column")
-        Css.gap("10px")
-        Css.width("200px")
+        Css.gap("15px")
+        Css.width("300px")
+        Css.padding("30px")
         Css.backgroundColor("#141414")
     ]
     nested = []
