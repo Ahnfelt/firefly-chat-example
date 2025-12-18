@@ -1,8 +1,11 @@
 import Lux from ff:lux
+import LuxEvent from ff:lux
 import WebServer from ff:webserver
+import Rpc from ff:rpc
 import Router
 import Html
 import Layout
+import RpcHandler
 
 routeModule = SourceLocation.here().directoryAndModule()
 
@@ -10,17 +13,54 @@ data PageData(channels: List[String])
 
 handle(request: WebRequest[WebResponse], context: RouteContext) {
     let pageData = PageData([])
-    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, pageData)})
+    let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
+    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
 }
 
 browserMain(system: BrowserSystem) {
-    Html.renderToMain(system, {render(_, _)})
+    let rpc = Rpc.newClient(system.httpClient(), "/_rpc/")
+    Html.renderToMain(system, {render(_, rpc, _)})
 }
 
-render(lux: Lux, data: PageData) {
+data CreateChannelRpc(name: String)
+instance CreateChannelRpc: Rpc[Bool] {}
+
+createChannelRpc(context: RpcContext, value: CreateChannelRpc): Bool {
+    True
+}
+
+render(lux: Lux, rpc: RpcClient, data: PageData) {
     Layout.layout(lux) {lux =>
         lux.div {
-            lux.text("New channel!")
+            lux.div {
+                lux.text("New channel")
+            }
+            lux.useState(""): name, setName =>
+            lux.form {
+                lux.on("submit") {event => 
+                    event.preventDefault()
+                    let created = rpc.call(CreateChannelRpc(name))
+                }
+                lux.label {
+                    lux.div {
+                        lux.text("Channel name")
+                    }
+                    lux.div {
+                        lux.input {
+                            lux.set("type", "text")
+                            lux.setValue(name)
+                            lux.onInput {event =>
+                                setName(event.text())
+                            }
+                        }
+                    }
+                }
+                lux.div {
+                    lux.button {
+                        lux.text("Create channel")
+                    }
+                }
+            }
         }        
     }
 }

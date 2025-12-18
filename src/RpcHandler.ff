@@ -1,0 +1,11 @@
+import Rpc from ff:rpc
+import routes.RouteFront
+
+data RpcContext()
+
+newServer(): RpcServer[Buffer, Buffer, RpcContext] {
+    let context = RpcContext()
+    let server = Rpc.newServer()
+    server.add(RouteFront.createChannelRpc)
+    server
+}

@@ -1,6 +1,8 @@
 import WebServer from ff:webserver
 import Router
 import WebRoute from ff:webserver
+import RpcHandler
+import Rpc from ff:rpc
 
 browserMain(system: BrowserSystem): Unit {
     let message = system.httpClient().get("/hello", []) {_.readText()}
@@ -10,12 +12,12 @@ browserMain(system: BrowserSystem): Unit {
 nodeMain(system: NodeSystem): Unit {
     let context = RouteContext(system)
     let handlers = WebRouteHandler(Array.new())
+    let rpcServer = RpcHandler.newServer()
     Router.handlers(handlers)
     WebServer.new(system, "0.0.0.0", 8080).listen {request =>
-        if(request.readPath() == "/test") {
-            request.writeHeader("Content-Type", "text/html; charset=UTF-8")
-            request.writeText("<!doctype html>")
-            request.writeText("<script type='module' src='/js/script/script/Main.run.mjs'></script>")
+        if(request.readPath().startsWith("/_rpc/")) {
+            request.readBuffer()
+            rpcServer.handlers
         } elseIf {request.readPath() == "/hello"} {
             request.writeHeader("Content-Type", "text/plain; charset=UTF-8")
             request.writeText("Hello from server!")
