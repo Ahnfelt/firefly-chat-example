@@ -4,30 +4,25 @@ import WebRoute from ff:webserver
 import RpcHandler
 import Rpc from ff:rpc
 
-browserMain(system: BrowserSystem): Unit {
-    let message = system.httpClient().get("/hello", []) {_.readText()}
-    system.js()->alert(message)
-}
-
 nodeMain(system: NodeSystem): Unit {
     let context = RouteContext(system, [])
     let handlers = WebRouteHandler(Array.new())
     let rpcServer = RpcHandler.newServer(context)
     Router.handlers(handlers)
     WebServer.new(system, "0.0.0.0", 8080).listen {request =>
-        if(request.readPath().startsWith("/_rpc/")) {
-            request.readBuffer()
-            rpcServer.handlers
-        } elseIf {request.readPath() == "/hello"} {
-            request.writeHeader("Content-Type", "text/plain; charset=UTF-8")
-            request.writeText("Hello from server!")
-        } elseIf {request.readPath().startsWith("/js/") && !request.readPath().contains("..")} {
-            request.writeHeader("Content-Type", "text/javascript; charset=UTF-8")
-            request.writeText(system.assets().readText(request.readPath()))
-        } elseIf {handlers.handle(request, context)} {
-
-        } else {
-            request.writeStatus("404 Not found")
+        request.readPath().{
+            | path {path.removeFirst("/_rpc/") | Some(name)} =>
+                let input = request.readBuffer()
+                rpcServer.handle(name, context, input).{
+                    | None => request.writeStatus("404 Not found")
+                    | Some(output) => request.writeBuffer(output)
+                }
+            | path {request.readPath().startsWith("/js/") && !request.readPath().contains("..")} =>
+                request.writeHeader("Content-Type", "text/javascript; charset=UTF-8")
+                request.writeText(system.assets().readText(request.readPath()))
+            | _ {handlers.handle(request, context)} =>
+            | _ =>
+                request.writeStatus("404 Not found")
         }
     }
 }
