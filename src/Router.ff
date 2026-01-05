@@ -2,8 +2,12 @@ import WebServer from ff:webserver
 import WebRoute from ff:webserver
 import routes.RouteFront
 import routes.RouteChannel
+import ChatChannel
 
-capability RouteContext(system: NodeSystem)
+capability RouteContext(
+    system: NodeSystem
+    mutable channels: List[ChatChannel]
+)
 
 frontRoute: WebRoute0 = WebRoute.new0(
     "/"

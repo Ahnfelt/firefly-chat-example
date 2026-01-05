@@ -2,11 +2,12 @@ import Lux from ff:lux
 import Css from ff:lux
 import WebRoute from ff:webserver
 import Router
+import ChatChannel
 
-layout(lux: Lux, content: Lux => Unit) {
+layout(lux: Lux, channels: List[ChatChannel], content: Lux => Unit) {
     lux.div {
         lux.cssClass(layoutCss)
-        menu(lux)
+        menu(lux, channels)
         lux.div {
             lux.cssClass(contentCss)
             content(lux)
@@ -14,16 +15,18 @@ layout(lux: Lux, content: Lux => Unit) {
     }
 }
 
-menu(lux: Lux) {
+menu(lux: Lux, channels: List[ChatChannel]) {
     lux.div {
         lux.cssClass(menuCss)
         lux.add("a") {
             lux.set("href", Router.frontRoute.toUrl())
             lux.text("New Channel")
         }
-        lux.add("a") {
-            lux.set("href", Router.channelRoute.toUrl("foobar"))
-            lux.text("foobar")
+        channels.each {channel =>
+            lux.add("a") {
+                lux.set("href", Router.channelRoute.toUrl(channel.name))
+                lux.text(channel.name)
+            }
         }
     }
 }

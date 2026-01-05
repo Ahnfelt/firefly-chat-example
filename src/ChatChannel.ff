@@ -1,0 +1,1 @@
+data ChatChannel(name: String, messages: List[String])

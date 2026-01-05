@@ -3,13 +3,14 @@ import WebServer from ff:webserver
 import Router
 import Html
 import Layout
+import ChatChannel
 
 routeModule = SourceLocation.here().directoryAndModule()
 
-data PageData(channels: List[String])
+data PageData(channels: List[ChatChannel])
 
 handle(request: WebRequest[WebResponse], context: RouteContext, channel: String) {
-    let pageData = PageData([])
+    let pageData = PageData(context.channels)
     Html.renderAndServe(context.system, routeModule, pageData, channel, request, {render(_, pageData)})
 }
 
@@ -18,7 +19,7 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, data: PageData) {
-    Layout.layout(lux) {lux =>
+    Layout.layout(lux, data.channels) {lux =>
         lux.div {
             lux.text("Hello " + Show.show(data.channels) + "!")
         }

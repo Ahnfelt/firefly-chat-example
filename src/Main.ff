@@ -10,9 +10,9 @@ browserMain(system: BrowserSystem): Unit {
 }
 
 nodeMain(system: NodeSystem): Unit {
-    let context = RouteContext(system)
+    let context = RouteContext(system, [])
     let handlers = WebRouteHandler(Array.new())
-    let rpcServer = RpcHandler.newServer()
+    let rpcServer = RpcHandler.newServer(context)
     Router.handlers(handlers)
     WebServer.new(system, "0.0.0.0", 8080).listen {request =>
         if(request.readPath().startsWith("/_rpc/")) {

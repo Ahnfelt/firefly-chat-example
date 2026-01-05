@@ -6,13 +6,14 @@ import Router
 import Html
 import Layout
 import RpcHandler
+import ChatChannel
 
 routeModule = SourceLocation.here().directoryAndModule()
 
-data PageData(channels: List[String])
+data PageData(channels: List[ChatChannel])
 
 handle(request: WebRequest[WebResponse], context: RouteContext) {
-    let pageData = PageData([])
+    let pageData = PageData(context.channels)
     let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
     Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
 }
@@ -25,12 +26,15 @@ browserMain(system: BrowserSystem) {
 data CreateChannelRpc(name: String)
 instance CreateChannelRpc: Rpc[Bool] {}
 
-createChannelRpc(context: RpcContext, value: CreateChannelRpc): Bool {
+createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
+    Log.debug("Here!")
+    context.channels = [...context.channels, ChatChannel(value.name, [])]
+    Log.show(context.channels)
     True
 }
 
 render(lux: Lux, rpc: RpcClient, data: PageData) {
-    Layout.layout(lux) {lux =>
+    Layout.layout(lux, data.channels) {lux =>
         lux.div {
             lux.div {
                 lux.text("New channel")
