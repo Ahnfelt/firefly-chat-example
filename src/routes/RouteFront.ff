@@ -65,6 +65,7 @@ renderForm(lux: Lux, rpc: RpcClient) {
                     lux.set("autofocus", "")
                     lux.cssClass(nameFieldCss)
                     lux.set("type", "text")
+                    lux.set("placeholder", "new-channel")
                     lux.setValue(name)
                     lux.onInput {event =>
                         setName(event.text())
@@ -79,6 +80,9 @@ renderForm(lux: Lux, rpc: RpcClient) {
                     lux.text("Cancel")
                 }
                 lux.button {
+                    if(name.size() == 0) {
+                        lux.set("disabled", "disabled")
+                    }
                     lux.cssClass(buttonCss)
                     lux.cssClass(createButtonCss)
                     lux.text("Create channel")
@@ -152,14 +156,30 @@ buttonCss = CssClass([
     Css.padding("10px")
     Css.fontSize("16px")
     Css.fontWeight("600")
+    Css.transition("all 0.2s ease")
 ], [], [])
 
 cancelButtonCss = CssClass([
     Css.color("#ffffff")
     Css.backgroundColor("#555555")
-], [], [])
+], [
+    CssNest("&:hover", [
+        Css.backgroundColor("#606060")
+    ], [])
+], [])
 
 createButtonCss = CssClass([
     Css.color("#ffffff")
     Css.backgroundColor("#299540")
-], [], [])
+], [
+    CssNest("&:hover", [
+        Css.backgroundColor("#31a74b")
+    ], [])
+    CssNest("&:disabled", [
+        Css.backgroundColor("#257e39")
+        Css.color("#dddddd")
+    ], [])
+    CssNest("&:disabled:hover", [
+        Css.backgroundColor("#257e39")
+    ], [])
+], [])
