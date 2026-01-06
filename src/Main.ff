@@ -8,6 +8,8 @@ nodeMain(system: NodeSystem): Unit {
     let context = RouteContext(system, [])
     let handlers = WebRouteHandler(Array.new())
     let rpcServer = RpcHandler.newServer(context)
+    let cacheSalt = system.crypto().randomBuffer(16)
+
     Router.handlers(handlers)
     WebServer.new(system, "0.0.0.0", 8080).listen {request =>
         request.readPath().{
@@ -17,15 +19,56 @@ nodeMain(system: NodeSystem): Unit {
                     | None => request.writeStatus("404 Not found")
                     | Some(output) => request.writeBuffer(output)
                 }
-            | path {request.readPath().startsWith("/js/") && !request.readPath().contains("..")} =>
-                request.writeHeader("Content-Type", "text/javascript; charset=UTF-8")
-                request.writeText(system.assets().readText(request.readPath()))
+            | path {path.removeFirst("/_assets/") | Some(file)} => 
+                serveAssets(system, cacheSalt, request, "/assets/" + file)
+            | path {path.removeFirst("/_js/") | Some(file)} => 
+                serveAssets(system, cacheSalt, request, "/js/" + file)
             | _ {handlers.handle(request, context)} =>
             | _ =>
                 request.writeStatus("404 Not found")
         }
     }
 }
+
+
+serveAssets(system: NodeSystem, salt: Buffer, request: WebRequest[WebResponse], asset: String): Unit {
+    if(!system.assets().exists(asset)) {
+        request.writeStatus("404 Not Found")
+    } else:
+    
+    guessContentType(asset).or {
+        request.writeStatus("404 Not Found")
+    }: contentType =>
+
+    serveAsset(system, salt, request, contentType, asset)
+}
+
+guessContentType(path: String): Option[String] {
+    path.split('.').last().flatMap {
+        | "js" => Some("text/javascript; charset=UTF-8")
+        | "png" => Some("image/png")
+        | "webp" => Some("image/webp")
+        | "woff2" => Some("font/woff2")
+        | _ => None
+    }
+}
+
+serveAsset(system: NodeSystem, salt: Buffer, request: WebRequest[WebResponse], contentType: String, asset: String): Unit {
+    let etag = "\"" + system.crypto().hmacSha256(salt, asset.toBuffer()).toHex() + "\""
+    request.writeHeader("Content-Type", contentType)
+    if(request.readHeader("host") == Some("localhost:8080") && False) {
+        request.writeHeader("Cache-Control", "no-cache")
+    } else {
+        request.writeHeader("Cache-Control", "public, max-age=60, must-revalidate")
+        request.writeHeader("ETag", etag)
+    }
+    if(request.readHeader("if-none-match").any {_.trim() == etag}) {
+        request.writeStatus("304 Not Modified")
+    } else {
+        request.writeStream(system.assets().readStream(asset))
+    }
+}
+
 
 buildMain(system: BuildSystem) {
     mutable assets = AssetSystem.create()
