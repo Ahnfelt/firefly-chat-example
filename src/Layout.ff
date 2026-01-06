@@ -19,13 +19,29 @@ menu(lux: Lux, channels: List[ChatChannel]) {
     lux.div {
         lux.cssClass(menuCss)
         lux.add("a") {
+            lux.cssClass(menuItemCss)
             lux.set("href", Router.frontRoute.toUrl())
-            lux.text("New Channel")
+            lux.div {
+                lux.cssClass(menuItemSymbolCss)
+                lux.text("＋")
+            }
+            lux.div {
+                lux.cssClass(menuItemNameCss)
+                lux.text("New Channel")
+            }
         }
         channels.each {channel =>
             lux.add("a") {
+                lux.cssClass(menuItemCss)
                 lux.set("href", Router.channelRoute.toUrl(channel.name))
-                lux.text(channel.name)
+                lux.div {
+                    lux.cssClass(menuItemSymbolCss)
+                    lux.text("#")
+                }
+                lux.div {
+                    lux.cssClass(menuItemNameCss)
+                    lux.text(channel.name)
+                }
             }
         }
     }
@@ -48,9 +64,54 @@ menuCss = CssClass(
         Css.display("flex")
         Css.flexDirection("column")
         Css.gap("15px")
-        Css.width("300px")
-        Css.padding("30px")
+        Css.boxSizing("border-box")
+        Css.width("350px")
+        Css.padding("15px")
         Css.backgroundColor("#141414")
+    ]
+    nested = []
+    keyframes = []
+)
+
+menuItemCss = CssClass(
+    css = [
+        Css.color("#696969")
+        Css.display("flex")
+        Css.alignItems("center")
+        Css.gap("10px")
+        Css.boxSizing("border-box")
+        Css.width("100%")
+        Css.paddingTop("8px")
+        Css.paddingBottom("8px")
+        Css.paddingLeft("10px")
+        Css.paddingRight("10px")
+        Css.borderRadius("8px")
+        Css.textDecoration("none")
+    ]
+    nested = [
+        CssNest("&:hover", [
+            Css.color("#bdbdbd")
+            Css.backgroundColor("#252525")
+        ], [])        
+    ]
+    keyframes = []
+)
+
+menuItemSymbolCss = CssClass(
+    css = [
+        Css.color("#696969")
+        Css.fontSize("16px")
+        Css.fontWeight("600")
+        Css.width("20px")
+    ]
+    nested = []
+    keyframes = []
+)
+
+menuItemNameCss = CssClass(
+    css = [
+        Css.fontSize("16px")
+        Css.fontWeight("600")
     ]
     nested = []
     keyframes = []
