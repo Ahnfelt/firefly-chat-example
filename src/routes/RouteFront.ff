@@ -7,6 +7,7 @@ import Html
 import Layout
 import RpcHandler
 import ChatChannel
+import Css from ff:lux
 
 routeModule = SourceLocation.here().directoryAndModule()
 
@@ -36,35 +37,129 @@ createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
 render(lux: Lux, rpc: RpcClient, data: PageData) {
     Layout.layout(lux, data.channels) {lux =>
         lux.div {
-            lux.div {
-                lux.text("New channel")
-            }
-            lux.useState(""): name, setName =>
-            lux.form {
-                lux.on("submit") {event => 
-                    event.preventDefault()
-                    let created = rpc.call(CreateChannelRpc(name))
-                }
-                lux.label {
-                    lux.div {
-                        lux.text("Channel name")
-                    }
-                    lux.div {
-                        lux.input {
-                            lux.set("type", "text")
-                            lux.setValue(name)
-                            lux.onInput {event =>
-                                setName(event.text())
-                            }
-                        }
-                    }
-                }
-                lux.div {
-                    lux.button {
-                        lux.text("Create channel")
-                    }
-                }
-            }
+            lux.cssClass(contentCss)
+            renderForm(lux, rpc)
         }        
     }
 }
+
+renderForm(lux: Lux, rpc: RpcClient) {
+    lux.div {
+        lux.cssClass(boxCss)
+        lux.div {
+            lux.cssClass(headingCss)
+            lux.text("Create channel")
+        }
+        lux.useState(""): name, setName =>
+        lux.form {
+            lux.on("submit") {event => 
+                event.preventDefault()
+                let created = rpc.call(CreateChannelRpc(name))
+            }
+            lux.label {
+                lux.div {
+                    lux.cssClass(labelCss)
+                    lux.text("Channel name")
+                }
+                lux.input {
+                    lux.set("autofocus", "")
+                    lux.cssClass(nameFieldCss)
+                    lux.set("type", "text")
+                    lux.setValue(name)
+                    lux.onInput {event =>
+                        setName(event.text())
+                    }
+                }
+            }
+            lux.div {
+                lux.cssClass(buttonsCss)
+                lux.button {
+                    lux.cssClass(buttonCss)
+                    lux.cssClass(cancelButtonCss)
+                    lux.text("Cancel")
+                }
+                lux.button {
+                    lux.cssClass(buttonCss)
+                    lux.cssClass(createButtonCss)
+                    lux.text("Create channel")
+                }
+            }
+        }
+    }        
+}
+
+contentCss = CssClass(
+    css = [
+        Css.display("flex")
+        Css.flexDirection("column")
+        Css.alignItems("center")
+        Css.padding("20px")
+        Css.paddingTop("80px")
+    ]
+    nested = []
+    keyframes = []
+)
+
+boxCss = CssClass([
+    Css.boxSizing("border-box")
+    Css.width("100%")
+    Css.maxWidth("680px")
+    Css.color("#ffffff")
+], [], [])
+
+headingCss = CssClass([
+    Css.fontSize("26px")
+    Css.fontWeight("600")
+], [], [])
+
+labelCss = CssClass([
+    Css.paddingTop("50px")
+    Css.paddingBottom("4px")
+    Css.fontSize("18px")
+    Css.fontWeight("600")
+], [], [])
+
+nameFieldCss = CssClass([
+    Css.backgroundColor("#333333")
+    Css.color("#ffffff")
+    Css.boxSizing("border-box")
+    Css.width("100%")
+    Css.paddingTop("13px")
+    Css.paddingBottom("15px")
+    Css.paddingLeft("17px")
+    Css.paddingRight("17px")
+    Css.fontSize("18px")
+    Css.borderRadius("6px")
+    Css.border("1px solid #666666")
+    Css.outline("none")
+], [
+    CssNest("&:focus", [
+        Css.borderColor("#aaaaaa")
+    ], [])
+], [])
+
+buttonsCss = CssClass([
+    Css.paddingTop("50px")
+    Css.width("100%")
+    Css.display("flex")
+    Css.gap("14px")
+], [], [])
+
+buttonCss = CssClass([
+    Css.borderRadius("6px")
+    Css.flex("1")
+    Css.border("none")
+    Css.padding("10px")
+    Css.fontSize("16px")
+    Css.fontWeight("600")
+], [], [])
+
+cancelButtonCss = CssClass([
+    Css.color("#ffffff")
+    Css.backgroundColor("#555555")
+], [], [])
+
+createButtonCss = CssClass([
+    Css.color("#ffffff")
+    Css.backgroundColor("#299540")
+], [], [])
