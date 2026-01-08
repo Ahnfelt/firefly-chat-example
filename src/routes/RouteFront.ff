@@ -1,6 +1,7 @@
 import Lux from ff:lux
 import LuxEvent from ff:lux
 import WebServer from ff:webserver
+import WebRoute from ff:webserver
 import Rpc from ff:rpc
 import Router
 import Html
@@ -55,6 +56,7 @@ renderForm(lux: Lux, rpc: RpcClient) {
             lux.on("submit") {event => 
                 event.preventDefault()
                 let created = rpc.call(CreateChannelRpc(name))
+                lux.jsSystem.globalThis()->location = Router.channelRoute.toUrl(name)
             }
             lux.label {
                 lux.div {
