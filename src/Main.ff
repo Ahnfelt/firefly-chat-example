@@ -8,7 +8,6 @@ nodeMain(system: NodeSystem): Unit {
     let context = RouteContext(system, [])
     let handlers = WebRouteHandler(Array.new())
     let rpcServer = RpcHandler.newServer(context)
-    let cacheSalt = system.crypto().randomBuffer(16)
 
     Router.handlers(handlers)
     WebServer.new(system, "0.0.0.0", 8080).listen {request =>
@@ -20,9 +19,9 @@ nodeMain(system: NodeSystem): Unit {
                     | Some(output) => request.writeBuffer(output)
                 }
             | path {path.removeFirst("/_assets/") | Some(file)} => 
-                serveAssets(system, cacheSalt, request, "/assets/" + file)
+                serveAssets(system, request, "/assets/" + file)
             | path {path.removeFirst("/_js/") | Some(file)} => 
-                serveAssets(system, cacheSalt, request, "/js/" + file)
+                serveAssets(system, request, "/js/" + file)
             | _ {handlers.handle(request, context)} =>
             | _ =>
                 request.writeStatus("404 Not found")
@@ -31,7 +30,7 @@ nodeMain(system: NodeSystem): Unit {
 }
 
 
-serveAssets(system: NodeSystem, salt: Buffer, request: WebRequest[WebResponse], asset: String): Unit {
+serveAssets(system: NodeSystem, request: WebRequest[WebResponse], asset: String): Unit {
     if(!system.assets().exists(asset)) {
         request.writeStatus("404 Not Found")
     } else:
@@ -40,7 +39,8 @@ serveAssets(system: NodeSystem, salt: Buffer, request: WebRequest[WebResponse], 
         request.writeStatus("404 Not Found")
     }: contentType =>
 
-    serveAsset(system, salt, request, contentType, asset)
+    request.writeHeader("Content-Type", contentType)
+    request.writeStream(system.assets().readStream(asset))
 }
 
 guessContentType(path: String): Option[String] {
@@ -52,23 +52,6 @@ guessContentType(path: String): Option[String] {
         | _ => None
     }
 }
-
-serveAsset(system: NodeSystem, salt: Buffer, request: WebRequest[WebResponse], contentType: String, asset: String): Unit {
-    let etag = "\"" + system.crypto().hmacSha256(salt, asset.toBuffer()).toHex() + "\""
-    request.writeHeader("Content-Type", contentType)
-    if(request.readHeader("host") == Some("localhost:8080") && False) {
-        request.writeHeader("Cache-Control", "no-cache")
-    } else {
-        request.writeHeader("Cache-Control", "public, max-age=60, must-revalidate")
-        request.writeHeader("ETag", etag)
-    }
-    if(request.readHeader("if-none-match").any {_.trim() == etag}) {
-        request.writeStatus("304 Not Modified")
-    } else {
-        request.writeStream(system.assets().readStream(asset))
-    }
-}
-
 
 buildMain(system: BuildSystem) {
     mutable assets = AssetSystem.create()
