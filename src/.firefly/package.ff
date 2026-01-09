@@ -1,3 +1,4 @@
 dependency ff:webserver:0.0.0
+dependency ff:websocket:0.0.0
 dependency ff:lux:0.0.0
 dependency ff:rpc:0.0.0

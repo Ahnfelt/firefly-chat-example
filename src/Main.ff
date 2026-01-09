@@ -3,6 +3,7 @@ import Router
 import WebRoute from ff:webserver
 import RpcHandler
 import Rpc from ff:rpc
+import ChatChannel
 
 nodeMain(system: NodeSystem): Unit {
     let context = RouteContext(system, [])
@@ -10,8 +11,19 @@ nodeMain(system: NodeSystem): Unit {
     let rpcServer = RpcHandler.newServer(context)
 
     Router.handlers(handlers)
-    WebServer.new(system, "0.0.0.0", 8080).listen {request =>
+    let webServer = WebServer.new(system, "0.0.0.0", 8080)
+    let topic = "chat"
+    webServer.enableWebSockets()
+    webServer.listen {request =>
         request.readPath().{
+            | _ {request.needsWebSocket()} => 
+                let webSocket = request.openWebSocket()
+                webSocket.subscribe(topic)
+                webSocket.readStream().eachWhile {buffer =>
+                    let message: ChatMessage = Serializable.deserialize(buffer)
+                    webSocket.publishBuffer(topic, Serializable.serialize(message))
+                    True
+                }
             | path {path.removeFirst("/_rpc/") | Some(name)} =>
                 let input = request.readBuffer()
                 rpcServer.handle(name, context, input).{
