@@ -24,6 +24,7 @@ render(lux: Lux, data: PageData) {
     Layout.layout(lux, data.channels) {lux =>
         lux.useState([]): messages, setMessages =>
         lux.div {
+            lux.useState(""): draft, setDraft =>
             lux.cssClass(channelCss)
             lux.div {
                 lux.cssClass(conversationAreaCss)
@@ -34,8 +35,7 @@ render(lux: Lux, data: PageData) {
                     }
                 }
             }
-        lux.form {
-                lux.useState(""): draft, setDraft =>
+            lux.form {
                 lux.on("submit") {event => 
                     event.preventDefault()
                     setMessages([...messages, ChatMessage(data.channel, draft)])
