@@ -29,7 +29,6 @@ data CreateChannelRpc(name: String)
 instance CreateChannelRpc: Rpc[Bool] {}
 
 createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
-    Log.debug("Here!")
     context.channels = [...context.channels, ChatChannel(value.name, [])]
     Log.show(context.channels)
     True

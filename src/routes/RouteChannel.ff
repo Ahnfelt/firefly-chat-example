@@ -18,20 +18,24 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channel: String)
 }
 
 browserMain(system: BrowserSystem) {
-    let socket = WebSocket.open(system, "/_websocket")
-    Html.renderToMain(system, {render(_, Some(socket), _)})
+    Html.renderToMain(system, {render(_, Some(system), _)})
 }
 
-render(lux: Lux, socket: Option[WebSocket], data: PageData) {
+render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
+    let socket = system.map {WebSocket.open(_, "/_websocket")}
     Layout.layout(lux, data.channels) {lux =>
         lux.useState([]): messages, setMessages =>
         lux.useMemo1(Unit) {_ =>
             socket.each {s =>
-                while {!s.isClosed()} {
-                    let buffer = s.readBuffer().grab()
-                    let message: ChatMessage = Serializable.deserialize(buffer)
-                    setMessages([...messages, message])
-                }
+                system.each {_.mainTask().spawn {task =>
+                    while {!s.isClosed()} {
+                        let buffer = s.readBuffer().grab()
+                        let message: ChatMessage = Serializable.deserialize(buffer)
+                        Log.debug("Received: " + message.text)
+                        setMessages([...messages, message])
+                        Lux.processRenderQueue(lux)
+                    }
+                }}
             }
         }: _ =>
         lux.div {
