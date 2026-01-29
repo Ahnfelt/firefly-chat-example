@@ -12,21 +12,9 @@ nodeMain(system: NodeSystem): Unit {
 
     Router.handlers(handlers)
     let webServer = WebServer.new(system, "0.0.0.0", 8080)
-    let topic = "chat"
     webServer.enableWebSockets()
     webServer.listen {request =>
         request.readPath().{
-            | _ {request.needsWebSocket()} => 
-                let webSocket = request.openWebSocket()
-                webSocket.subscribe(topic)
-                webSocket.writeBuffer(Serializable.serialize(ChatMessage("hej", "fra server")))
-                webSocket.readStream().eachWhile {buffer =>
-                    let message: ChatMessage = Serializable.deserialize(buffer)
-                    let serialized = Serializable.serialize(message)
-                    webSocket.writeBuffer(serialized)
-                    webSocket.publishBuffer(topic, serialized)
-                    True
-                }
             | path {path.removeFirst("/_rpc/") | Some(name)} =>
                 let input = request.readBuffer()
                 rpcServer.handle(name, context, input).{

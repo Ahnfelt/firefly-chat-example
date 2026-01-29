@@ -1,0 +1,23 @@
+import WebServer from ff:webserver
+import WebRoute from ff:webserver
+import Router
+import ChatChannel
+
+routeModule = SourceLocation.here().directoryAndModule()
+
+data PageData(channels: List[ChatChannel])
+
+handle(request: WebRequest[WebResponse], context: RouteContext) {
+    if(request.needsWebSocket()):
+    let topic = "chat"
+    let webSocket = request.openWebSocket()
+    webSocket.subscribe(topic)
+    webSocket.writeBuffer(Serializable.serialize(ChatMessage("hej", "fra server")))
+    webSocket.readStream().eachWhile {buffer =>
+        let message: ChatMessage = Serializable.deserialize(buffer)
+        let serialized = Serializable.serialize(message)
+        webSocket.writeBuffer(serialized)
+        webSocket.publishBuffer(topic, serialized)
+        True
+    }    
+}
