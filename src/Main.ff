@@ -22,7 +22,9 @@ nodeMain(system: NodeSystem): Unit {
                 webSocket.writeBuffer(Serializable.serialize(ChatMessage("hej", "fra server")))
                 webSocket.readStream().eachWhile {buffer =>
                     let message: ChatMessage = Serializable.deserialize(buffer)
-                    webSocket.publishBuffer(topic, Serializable.serialize(message))
+                    let serialized = Serializable.serialize(message)
+                    webSocket.writeBuffer(serialized)
+                    webSocket.publishBuffer(topic, serialized)
                     True
                 }
             | path {path.removeFirst("/_rpc/") | Some(name)} =>
