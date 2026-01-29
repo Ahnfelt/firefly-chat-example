@@ -1,6 +1,7 @@
 import Lux from ff:lux
 import LuxEvent from ff:lux
 import WebServer from ff:webserver
+import WebRoute from ff:webserver
 import Router
 import Html
 import Layout
@@ -22,7 +23,7 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
-    let socket = system.map {WebSocket.open(_, "/_websocket")}
+    let socket = system.map {WebSocket.open(_, Router.webSocketRoute.toUrl())}
     Layout.layout(lux, data.channels) {lux =>
         lux.useState([]): messages, setMessages =>
         lux.useMemo1(Unit) {_ =>
