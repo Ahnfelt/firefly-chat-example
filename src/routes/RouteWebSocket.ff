@@ -5,8 +5,6 @@ import ChatChannel
 
 routeModule = SourceLocation.here().directoryAndModule()
 
-data PageData(channels: List[ChatChannel])
-
 handle(request: WebRequest[WebResponse], context: RouteContext) {
     if(request.needsWebSocket()):
     let topic = "chat"
