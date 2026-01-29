@@ -10,7 +10,7 @@ capability RouteContext(
     mutable channels: List[ChatChannel]
 )
 
-webSocketRoute: WebRoute0[] = WebRoute.new0(
+webSocketRoute: WebRoute0 = WebRoute.new0(
     "/_websocket"
 )
 
