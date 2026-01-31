@@ -5,17 +5,19 @@ import ChatChannel
 
 routeModule = SourceLocation.here().directoryAndModule()
 
-handle(request: WebRequest[WebResponse], context: RouteContext) {
+handle(request: WebRequest[WebResponse], context: RouteContext, channelName: String, seen: Int) {
+    Log.debug("Channel: " + channelName)
+    context.channels.find {_.name == channelName}.each: channel =>
+    Log.debug("Found: " + channel.name)
+    let seenMessages = channel.messages.dropFirst(seen)
     if(request.needsWebSocket()):
-    let topic = "chat"
     let webSocket = request.openWebSocket()
-    webSocket.subscribe(topic)
-    webSocket.writeBuffer(Serializable.serialize(ChatMessage("hej", "fra server")))
-    webSocket.readStream().eachWhile {buffer =>
+    webSocket.subscribe(channelName)
+    webSocket.writeBuffer(Serializable.serialize(seenMessages))
+    webSocket.readStream().each {buffer =>
         let message: ChatMessage = Serializable.deserialize(buffer)
-        let serialized = Serializable.serialize(message)
+        let serialized = Serializable.serialize([message])
         webSocket.writeBuffer(serialized)
-        webSocket.publishBuffer(topic, serialized)
-        True
+        webSocket.publishBuffer(channelName, serialized)
     }    
 }

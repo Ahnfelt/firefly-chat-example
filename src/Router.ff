@@ -10,8 +10,8 @@ capability RouteContext(
     mutable channels: List[ChatChannel]
 )
 
-webSocketRoute: WebRoute0 = WebRoute.new0(
-    "/_websocket"
+webSocketRoute: WebRoute2[String, Int] = WebRoute.new2(
+    "/_websocket/{channel}/{seen}"
 )
 
 frontRoute: WebRoute0 = WebRoute.new0(
@@ -30,7 +30,7 @@ modulesWithBrowserMain(): List[String] {
 }
 
 handlers(handler: WebRouteHandler[RouteContext]) {
-    handler.add0(webSocketRoute, RouteWebSocket.handle)
+    handler.add2(webSocketRoute, RouteWebSocket.handle)
     handler.add0(frontRoute, RouteFront.handle)
     handler.add1(channelRoute, RouteChannel.handle)
 }

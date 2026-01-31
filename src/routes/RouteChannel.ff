@@ -23,9 +23,10 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
-    let socket = system.map {WebSocket.open(_, Router.webSocketRoute.toUrl())}
+    let seenMessages = data.channels.find {_.name == data.channel}.map {_.messages}.else {[]}
+    let socket = system.map {WebSocket.open(_, Router.webSocketRoute.toUrl(data.channel, seenMessages.size()))}
     Layout.layout(lux, data.channels) {lux =>
-        lux.useState([]): messages, setMessages =>
+        lux.useState(seenMessages): messages, setMessages =>
         lux.useMemo1(Unit) {_ =>
             socket.each {s =>
                 system.each {_.mainTask().spawn {task =>
@@ -54,7 +55,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
             lux.form {
                 lux.on("submit") {event => 
                     event.preventDefault()
-                    let buffer = Serializable.serialize(ChatMessage(data.channel, draft))
+                    let buffer = Serializable.serialize(ChatMessage(draft))
                     socket.each {_.writeBuffer(buffer)}
                     setDraft("")
                 }
