@@ -13,9 +13,15 @@ routeModule = SourceLocation.here().directoryAndModule()
 
 data PageData(channel: String, channels: List[ChatChannel])
 
-handle(request: WebRequest[WebResponse], context: RouteContext, channel: String) {
-    let pageData = PageData(channel, context.channels)
-    Html.renderAndServe(context.system, routeModule, pageData, channel, request, {render(_, None, pageData)})
+handle(request: WebRequest[WebResponse], context: RouteContext, channelName: String) {
+    let pageData = PageData(channelName, context.channels)
+    if(!context.channels.any {_.name == channelName}) {
+        request.writeStatus("307 Temporary Redirect")
+        let host = "http://" + request.readHeader("host").grab()
+        request.writeHeader("Location", host + Router.frontRoute.toUrl())
+    } else {
+        Html.renderAndServe(context.system, routeModule, pageData, channelName, request, {render(_, None, pageData)})
+    }
 }
 
 browserMain(system: BrowserSystem) {
