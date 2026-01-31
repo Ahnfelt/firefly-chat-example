@@ -32,7 +32,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
                 system.each {_.mainTask().spawn {task =>
                     while {!s.isClosed()} {
                         let buffer = s.readBuffer().grab()
-                        let newMessages: List[ChatMessage] = Serializable.deserialize(buffer)
+                        let newMessages = Serializable.deserialize(buffer)
                         setMessages([...messages, ...newMessages])
                         Lux.processRenderQueue(lux)
                     }
