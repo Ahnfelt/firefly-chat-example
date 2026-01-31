@@ -17,7 +17,7 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
     let pageData = PageData(channelName, context.channels)
     if(!context.channels.any {_.name == channelName}) {
         request.writeStatus("307 Temporary Redirect")
-        let origin = request.readHeader("origin").else {
+        let origin = request.readHeader("origin").filter {_ != "null"}.else {
             "http://" + request.readHeader("host").grab()
         }
         request.writeHeader("Location", origin + Router.frontRoute.toUrl())
