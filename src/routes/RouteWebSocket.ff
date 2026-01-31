@@ -6,9 +6,7 @@ import ChatChannel
 routeModule = SourceLocation.here().directoryAndModule()
 
 handle(request: WebRequest[WebResponse], context: RouteContext, channelName: String, seen: Int) {
-    Log.debug("Channel: " + channelName)
     context.channels.find {_.name == channelName}.each: channel =>
-    Log.debug("Found: " + channel.name)
     let seenMessages = channel.messages.dropFirst(seen)
     if(request.needsWebSocket()):
     let webSocket = request.openWebSocket()
