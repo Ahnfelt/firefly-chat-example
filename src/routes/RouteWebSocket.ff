@@ -13,7 +13,11 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
     webSocket.subscribe(channelName)
     webSocket.writeBuffer(Serializable.serialize(seenMessages))
     webSocket.readStream().each {buffer =>
-        let message: ChatMessage = Serializable.deserialize(buffer)
+        let message = Serializable.deserialize[ChatMessage](buffer)
+        context.channels = context.channels.map {
+            | c {c.name == channelName} => c.ChatChannel(messages = [...c.messages, message])
+            | c => c
+        }
         let serialized = Serializable.serialize([message])
         webSocket.writeBuffer(serialized)
         webSocket.publishBuffer(channelName, serialized)

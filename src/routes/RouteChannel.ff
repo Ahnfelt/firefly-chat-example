@@ -33,6 +33,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
                     while {!s.isClosed()} {
                         let buffer = s.readBuffer().grab()
                         let newMessages = Serializable.deserialize(buffer)
+                        // TODO: Messages and setMessages here are captured forever
                         setMessages([...messages, ...newMessages])
                         Lux.processRenderQueue(lux)
                     }
