@@ -32,9 +32,8 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
                 system.each {_.mainTask().spawn {task =>
                     while {!s.isClosed()} {
                         let buffer = s.readBuffer().grab()
-                        let message: ChatMessage = Serializable.deserialize(buffer)
-                        Log.debug("Received: " + message.text)
-                        setMessages([...messages, message])
+                        let newMessages: List[ChatMessage] = Serializable.deserialize(buffer)
+                        setMessages([...messages, ...newMessages])
                         Lux.processRenderQueue(lux)
                     }
                 }}
@@ -46,7 +45,6 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
             lux.div {
                 lux.cssClass(conversationAreaCss)
                 messages.each {m =>
-                    let m2: ChatMessage = m // TODO
                     lux.div {
                         lux.text("Message: " + m.text)
                     }
