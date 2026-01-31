@@ -17,8 +17,10 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
     let pageData = PageData(channelName, context.channels)
     if(!context.channels.any {_.name == channelName}) {
         request.writeStatus("307 Temporary Redirect")
-        let host = "http://" + request.readHeader("host").grab()
-        request.writeHeader("Location", host + Router.frontRoute.toUrl())
+        let origin = request.readHeader("origin").else {
+            "http://" + request.readHeader("host").grab()
+        }
+        request.writeHeader("Location", origin + Router.frontRoute.toUrl())
     } else {
         Html.renderAndServe(context.system, routeModule, pageData, channelName, request, {render(_, None, pageData)})
     }
