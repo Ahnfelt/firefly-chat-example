@@ -49,6 +49,7 @@ serveAssets(system: NodeSystem, request: WebRequest[WebResponse], asset: String)
 guessContentType(path: String): Option[String] {
     path.split('.').last().flatMap {
         | "js" => Some("text/javascript; charset=UTF-8")
+        | "map" => Some("application/json")
         | "png" => Some("image/png")
         | "webp" => Some("image/webp")
         | "woff2" => Some("font/woff2")

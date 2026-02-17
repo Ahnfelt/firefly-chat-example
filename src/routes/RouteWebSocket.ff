@@ -10,6 +10,7 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
     let seenMessages = channel.messages.dropFirst(seen)
     if(request.needsWebSocket()):
     let webSocket = request.openWebSocket()
+    context.system.mainTask().sleep(Duration(1.0))
     webSocket.subscribe(channelName)
     webSocket.writeBuffer(Serializable.serialize(seenMessages))
     webSocket.readStream().each {buffer =>
