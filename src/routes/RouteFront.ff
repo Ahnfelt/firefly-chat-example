@@ -17,12 +17,14 @@ data PageData(channels: List[ChatChannel])
 handle(request: WebRequest[WebResponse], context: RouteContext) {
     let pageData = PageData(context.channels)
     let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
-    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
+    //Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
+    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, context.system.mainTask(), pageData)})
 }
 
 browserMain(system: BrowserSystem) {
     let rpc = Rpc.newClient(system.httpClient(), "/_rpc/")
-    Html.renderToMain(system, {render(_, rpc, _)})
+    //Html.renderToMain(system, {render(_, rpc, _)})
+    Html.renderToMain(system, {render(_, system.mainTask(), _)})
 }
 
 data CreateChannelRpc(name: String)
@@ -33,7 +35,18 @@ createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
     True
 }
 
-render(lux: Lux, rpc: RpcClient, data: PageData) {
+render(lux: Lux, task: Task, data: PageData) {
+    lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>
+    lux.useState("apple"): value, setValue =>
+    lux.div {
+        lux.onClick {_ => 
+            setValue("banana")
+        }
+        lux.text(value)
+    }
+}
+
+render2(lux: Lux, rpc: RpcClient, data: PageData) {
     Layout.layout(lux, data.channels) {lux =>
         lux.div {
             lux.cssClass(contentCss)
