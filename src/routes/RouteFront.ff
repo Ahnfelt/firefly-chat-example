@@ -38,12 +38,16 @@ createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
 render(lux: Lux, task: Task, data: PageData) {
     lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>
     lux.useState("apple"): value, setValue =>
-    lux.useCallback1(setValue): setValue =>
     lux.div {
         lux.onClick {_ => 
             setValue("banana")
         }
         lux.text(value)
+    }
+    if(value != "banana") {
+        lux.div {
+            lux.text("no banana")
+        }
     }
 }
 
