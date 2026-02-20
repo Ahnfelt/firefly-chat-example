@@ -49,6 +49,9 @@ render(lux: Lux, task: Task, data: PageData) {
             lux.text("no banana")
         }
     }
+    lux.div {
+        lux.text("the end")
+    }
 }
 
 render2(lux: Lux, rpc: RpcClient, data: PageData) {
