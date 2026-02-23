@@ -1,12 +1,17 @@
 import WebServer from ff:webserver
 import WebRoute from ff:webserver
+import Pg from ff:postgresql
 import Router
 import ChatChannel
+import ChatService
 
 routeModule = SourceLocation.here().directoryAndModule()
 
 handle(request: WebRequest[WebResponse], context: RouteContext, channelName: String, seen: Int) {
-    context.channels.find {_.name == channelName}.each: channel =>
+    let channels = context.databasePool.transaction {connection => 
+        ChatService.loadChannels(connection)
+    }    
+    channels.find {_.name == channelName}.each: channel =>
     let seenMessages = channel.messages.dropFirst(seen)
     if(request.needsWebSocket()):
     let webSocket = request.openWebSocket()
@@ -15,11 +20,10 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
     webSocket.writeBuffer(Serializable.serialize(seenMessages))
     webSocket.readStream().each {buffer =>
         let message = Serializable.deserialize[ChatMessage](buffer)
-        context.channels = context.channels.map {
-            | c {c.name == channelName} => c.ChatChannel(messages = [...c.messages, message])
-            | c => c
-        }
-        let serialized = Serializable.serialize([message])
+        let savedMessage = context.databasePool.transaction {connection => 
+            ChatService.saveMessage(connection, channelName, message)
+        }    
+        let serialized = Serializable.serialize(savedMessage.toList())
         webSocket.writeBuffer(serialized)
         webSocket.publishBuffer(channelName, serialized)
     }    

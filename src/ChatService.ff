@@ -1,0 +1,51 @@
+import Pg from ff:postgresql
+import ChatChannel
+
+loadChannels(connection: PgConnection): List[ChatChannel] {
+    Log.debug("loadChannels")
+    connection.statement("""
+        select name
+        from "Channel"
+    """).map {row => 
+        let channelName = row.getString("name").grab()
+        ChatChannel(
+            channelName
+            messages = loadMessages(connection, channelName)
+        )
+    }
+}
+
+loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
+    Log.debug("loadMessages " + channelName)
+    connection.statement("""
+        select 
+            to_char(created, 'YYYY-MM-DD HH:mm:ss') created,
+            text
+        from "Message" m
+        join "Channel" c on c.id = m.channelId
+        where c.name = $channelName
+    """)
+        .withString("channelName", channelName)
+        .map {row => 
+            let time = row.getString("created").grab()
+            let text = row.getString("text").grab()
+            Log.debug(time + " " + channelName + ": " + text)
+            ChatMessage(text)
+        }
+}
+
+saveMessage(connection: PgConnection, channelName: String, message: ChatMessage): Option[ChatMessage] {
+    connection.statement("""
+        insert into "Message" (channelId, text) values (
+            (select id from "Channel" where name = $channelName),
+            $message
+        )
+        returning to_char(created, 'YYYY-MM-DD') created
+    """)
+        .withString("channelName", channelName)
+        .withString("message", message.text)
+        .map {row => 
+            let time = row.getString("created").grab()
+            message
+        }.first()
+}

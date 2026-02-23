@@ -9,7 +9,6 @@ import Pg from ff:postgresql
 capability RouteContext(
     system: NodeSystem
     databasePool: PgPool
-    mutable channels: List[ChatChannel]
 )
 
 webSocketRoute: WebRoute2[String, Int] = WebRoute.new2(

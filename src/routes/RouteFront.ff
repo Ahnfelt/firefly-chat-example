@@ -10,13 +10,17 @@ import RpcHandler
 import ChatChannel
 import Css from ff:lux
 import Pg from ff:postgresql
+import ChatService
 
 routeModule = SourceLocation.here().directoryAndModule()
 
 data PageData(channels: List[ChatChannel])
 
 handle(request: WebRequest[WebResponse], context: RouteContext) {
-    let pageData = PageData(context.channels)
+    let pageData = context.databasePool.transaction {connection => 
+        let channels = ChatService.loadChannels(connection)
+        PageData(channels)
+    }
     let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
     Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
 }
@@ -38,7 +42,6 @@ createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
             .withString("name", value.name)
             .run()
     }
-    context.channels = [...context.channels, ChatChannel(value.name, [])]
     True
 }
 

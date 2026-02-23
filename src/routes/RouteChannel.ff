@@ -1,21 +1,26 @@
 import Lux from ff:lux
 import LuxEvent from ff:lux
+import Css from ff:lux
 import WebServer from ff:webserver
 import WebRoute from ff:webserver
+import WebSocket from ff:websocket
+import Pg from ff:postgresql
 import Router
 import Html
 import Layout
 import ChatChannel
-import Css from ff:lux
-import WebSocket from ff:websocket
+import ChatService
 
 routeModule = SourceLocation.here().directoryAndModule()
 
 data PageData(channel: String, channels: List[ChatChannel])
 
 handle(request: WebRequest[WebResponse], context: RouteContext, channelName: String) {
-    let pageData = PageData(channelName, context.channels)
-    if(!context.channels.any {_.name == channelName}) {
+    let pageData = context.databasePool.transaction {connection => 
+        let channels = ChatService.loadChannels(connection)
+        PageData(channelName, channels)
+    }
+    if(!pageData.channels.any {_.name == channelName}) {
         request.writeStatus("307 Temporary Redirect")
         let origin = request.readHeader("origin").filter {_ != "null"}.else {
             "http://" + request.readHeader("host").grab()
@@ -31,7 +36,7 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
-    let seenMessages: List[ChatMessage] = [] // data.channels.find {_.name == data.channel}.map {_.messages}.else {[]}
+    let seenMessages: List[ChatMessage] = data.channels.find {_.name == data.channel}.map {_.messages}.else {[]}
     let webSocketUrl = Router.webSocketRoute.toUrl(data.channel, seenMessages.size())
     Layout.layout(lux, data.channels) {lux =>
         lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>

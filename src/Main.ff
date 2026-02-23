@@ -10,9 +10,9 @@ nodeMain(system: NodeSystem): Unit {
     let databasePassword = system.arguments().grabFirst()
     let databasePool = Pg.newPoolFromConnectionString(
         system, 
-        "postgresql://firefly-chat-example:" + databasePassword + "@mzw.dk/firefly-chat-example?sslmode=require"
+        "postgresql://firefly-chat-example:" + databasePassword + "@mzw.dk/firefly-chat-example?sslmode=verify-full"
     )
-    let context = RouteContext(system, databasePool, [])
+    let context = RouteContext(system, databasePool)
     let handlers = WebRouteHandler(Array.new())
     let rpcServer = RpcHandler.newServer(context)
 
