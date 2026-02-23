@@ -9,6 +9,7 @@ import Layout
 import RpcHandler
 import ChatChannel
 import Css from ff:lux
+import Pg from ff:postgresql
 
 routeModule = SourceLocation.here().directoryAndModule()
 
@@ -17,44 +18,31 @@ data PageData(channels: List[ChatChannel])
 handle(request: WebRequest[WebResponse], context: RouteContext) {
     let pageData = PageData(context.channels)
     let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
-    //Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
-    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, context.system.mainTask(), pageData)})
+    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
 }
 
 browserMain(system: BrowserSystem) {
     let rpc = Rpc.newClient(system.httpClient(), "/_rpc/")
-    //Html.renderToMain(system, {render(_, rpc, _)})
-    Html.renderToMain(system, {render(_, system.mainTask(), _)})
+    Html.renderToMain(system, {render(_, rpc, _)})
 }
 
 data CreateChannelRpc(name: String)
 instance CreateChannelRpc: Rpc[Bool] {}
 
 createChannelRpc(context: RouteContext, value: CreateChannelRpc): Bool {
+    context.databasePool.transaction {connection =>
+        connection.statement("""
+            insert into "Channel" (name) values ($name)
+            returning id
+        """)
+            .withString("name", value.name)
+            .run()
+    }
     context.channels = [...context.channels, ChatChannel(value.name, [])]
     True
 }
 
-render(lux: Lux, task: Task, data: PageData) {
-    lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>
-    lux.useState("apple"): value, setValue =>
-    lux.div {
-        lux.onClick {_ => 
-            setValue("banana")
-        }
-        lux.text(value)
-    }
-    if(value != "banana") {
-        lux.div {
-            lux.text("no banana")
-        }
-    }
-    lux.div {
-        lux.text("the end")
-    }
-}
-
-render2(lux: Lux, rpc: RpcClient, data: PageData) {
+render(lux: Lux, rpc: RpcClient, data: PageData) {
     Layout.layout(lux, data.channels) {lux =>
         lux.div {
             lux.cssClass(contentCss)

@@ -4,9 +4,11 @@ import routes.RouteFront
 import routes.RouteChannel
 import routes.RouteWebSocket
 import ChatChannel
+import Pg from ff:postgresql
 
 capability RouteContext(
     system: NodeSystem
+    databasePool: PgPool
     mutable channels: List[ChatChannel]
 )
 
