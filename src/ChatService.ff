@@ -2,7 +2,6 @@ import Pg from ff:postgresql
 import ChatChannel
 
 loadChannels(connection: PgConnection): List[ChatChannel] {
-    Log.debug("loadChannels")
     connection.statement("""
         select name
         from "Channel"
@@ -16,7 +15,6 @@ loadChannels(connection: PgConnection): List[ChatChannel] {
 }
 
 loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
-    Log.debug("loadMessages " + channelName)
     connection.statement("""
         select 
             to_char(created, 'YYYY-MM-DD HH:mm:ss') created,
@@ -29,7 +27,7 @@ loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
         .map {row => 
             let time = row.getString("created").grab()
             let text = row.getString("text").grab()
-            Log.debug(time + " " + channelName + ": " + text)
+            //Log.debug(time + " " + channelName + ": " + text)
             ChatMessage(text)
         }
 }
