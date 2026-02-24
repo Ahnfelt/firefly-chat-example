@@ -40,6 +40,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
     let webSocketUrl = Router.webSocketRoute.toUrl(data.channel, seenMessages.size())
     Layout.layout(lux, data.channels) {lux =>
         lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>
+        lux.div:
         lux.useState(seenMessages): messages, setMessages =>
         lux.useWebSocket(webSocketUrl) {buffer =>
             let newMessages = Serializable.deserialize(buffer)
