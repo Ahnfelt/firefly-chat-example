@@ -37,7 +37,7 @@ saveMessage(connection: PgConnection, channelName: String, message: ChatMessage)
             (select id from "Channel" where name = $channelName),
             $message
         )
-        returning to_char(created, 'YYYY-MM-DD') created
+        returning to_char(created, 'YYYY-MM-DD HH:mm:ss') created
     """)
         .withString("channelName", channelName)
         .withString("message", message.text)
