@@ -43,6 +43,6 @@ saveMessage(connection: PgConnection, channelName: String, message: ChatMessage)
         .withString("message", message.text)
         .map {row => 
             let time = row.getString("created").grab()
-            message
+            message.ChatMessage(time = Some(time))
         }.first()
 }
