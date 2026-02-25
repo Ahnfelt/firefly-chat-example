@@ -27,8 +27,7 @@ loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
         .map {row => 
             let time = row.getString("created").grab()
             let text = row.getString("text").grab()
-            //Log.debug(time + " " + channelName + ": " + text)
-            ChatMessage(text)
+            ChatMessage(Some(time), text)
         }
 }
 

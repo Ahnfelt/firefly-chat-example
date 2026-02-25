@@ -1,3 +1,6 @@
 data ChatChannel(name: String, messages: List[ChatMessage])
 
-data ChatMessage(text: String)
+data ChatMessage(
+    time: Option[String]
+    text: String
+)

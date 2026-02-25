@@ -53,8 +53,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
                 lux.cssClass(conversationAreaCss)
                 messages.each {m =>
                     lux.div {
-                        Log.debug("Message:" + m.text)
-                        lux.text("Message: " + m.text)
+                        lux.text(m.time.else {""} + ": " + m.text)
                     }
                 }
             }
@@ -62,7 +61,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
             lux.form {
                 lux.on("submit") {event => 
                     event.preventDefault()
-                    let buffer = Serializable.serialize(ChatMessage(draft))
+                    let buffer = Serializable.serialize(ChatMessage(None, draft))
                     sendOnWebSocket(buffer)
                     setDraft("")
                 }
