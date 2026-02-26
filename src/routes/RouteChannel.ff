@@ -53,7 +53,7 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
                 lux.cssClass(conversationAreaCss)
                 messages.each {m =>
                     lux.div {
-                        lux.text(m.time.else {""} + ": " + m.text)
+                        lux.text(m.time.map {_.toRfc9557()}.else {""} + ": " + m.text)
                     }
                 }
             }

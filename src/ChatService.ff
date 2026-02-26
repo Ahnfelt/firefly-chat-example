@@ -17,7 +17,7 @@ loadChannels(connection: PgConnection): List[ChatChannel] {
 loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
     connection.statement("""
         select 
-            to_char(created, 'YYYY-MM-DD HH:mm:ss') created,
+            created,
             text
         from "Message" m
         join "Channel" c on c.id = m.channelId
@@ -25,7 +25,7 @@ loadMessages(connection: PgConnection, channelName: String): List[ChatMessage] {
     """)
         .withString("channelName", channelName)
         .map {row => 
-            let time = row.getString("created").grab()
+            let time = row.getDate("created").grab()
             let text = row.getString("text").grab()
             ChatMessage(Some(time), text)
         }
@@ -37,12 +37,12 @@ saveMessage(connection: PgConnection, channelName: String, message: ChatMessage)
             (select id from "Channel" where name = $channelName),
             $message
         )
-        returning to_char(created, 'YYYY-MM-DD HH:mm:ss') created
+        returning created
     """)
         .withString("channelName", channelName)
         .withString("message", message.text)
         .map {row => 
-            let time = row.getString("created").grab()
+            let time = row.getDate("created").grab()
             message.ChatMessage(time = Some(time))
         }.first()
 }
