@@ -82,15 +82,11 @@ render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
 
 showTime(currentTime: Date, date: Date): String {
     let danishDate = date.withTimeZone("Europe/Copenhagen")
-    let time = zeroPad(danishDate.hour()) + ":" + zeroPad(danishDate.minute())
+    let time = danishDate.hour().pad("00") + ":" + danishDate.minute().pad("00")
     if(currentTime.daysSince(date) < 1.0) {time} else:
     let day = danishDate.day() + "/" + danishDate.month()
     if(currentTime.yearsSince(date) < 1.0) {day + " " + time} else:
     day + " " + danishDate.year()
-}
-
-zeroPad(n: Int): String {
-    if(n < 10) {"0" + n} else {"" + n}
 }
 
 channelCss = CssClass([
