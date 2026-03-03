@@ -36,6 +36,26 @@ browserMain(system: BrowserSystem) {
 }
 
 render(lux: Lux, system: Option[BrowserSystem], data: PageData) {
+    lux.div:
+    lux.useSuspense {lux.div {lux.text("Loading...")}}: lux =>
+    system.grab().mainTask().sleep(Duration(0.1))
+    lux.div:
+    lux.useState([]): messages, setMessages =>
+
+    lux.form {
+        lux.on("submit") {event => 
+            event.preventDefault()
+            let newMessages = [ChatMessage(None, "Test")]
+            setMessages([...messages, ...newMessages])
+        }
+        lux.button {
+            lux.text("Test")
+        }
+    }
+}
+
+
+renderOriginal(lux: Lux, system: Option[BrowserSystem], data: PageData) {
     let seenMessages: List[ChatMessage] = data.channels.find {_.name == data.channel}.map {_.messages}.else {[]}
     let webSocketUrl = Router.webSocketRoute.toUrl(data.channel, seenMessages.size())
     Layout.layout(lux, data.channels) {lux =>
