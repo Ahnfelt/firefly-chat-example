@@ -61,12 +61,15 @@ renderForm(lux: Lux, rpc: RpcClient) {
             lux.cssClass(headingCss)
             lux.text("Create channel")
         }
+        lux.useEffect {name =>
+            rpc.call(CreateChannelRpc(name))
+            lux.jsSystem.globalThis()->location = Router.channelRoute.toUrl(name)
+        }: channelEffect =>
         lux.useState(""): name, setName =>
         lux.form {
             lux.on("submit") {event => 
                 event.preventDefault()
-                let created = rpc.call(CreateChannelRpc(name))
-                lux.jsSystem.globalThis()->location = Router.channelRoute.toUrl(name)
+                channelEffect.reload(name)
             }
             lux.label {
                 lux.div {
@@ -92,7 +95,7 @@ renderForm(lux: Lux, rpc: RpcClient) {
                     lux.text("Cancel")
                 }
                 lux.button {
-                    if(name.size() == 0) {
+                    if(name.size() == 0 || channelEffect.loading) {
                         lux.set("disabled", "disabled")
                     }
                     lux.cssClass(buttonCss)
