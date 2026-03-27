@@ -93,6 +93,13 @@ renderForm(lux: Lux, rpc: RpcClient) {
                     lux.cssClass(buttonCss)
                     lux.cssClass(cancelButtonCss)
                     lux.text("Cancel")
+                    if(!channelEffect.loading) {
+                        lux.set("disabled", "disabled")
+                    }
+                    lux.onClick {event =>
+                        event.preventDefault()
+                        channelEffect.cancel()
+                    }
                 }
                 lux.button {
                     if(name.size() == 0 || channelEffect.loading) {
