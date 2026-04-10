@@ -27,7 +27,7 @@ handle(request: WebRequest[WebResponse], context: RouteContext, channelName: Str
         }
         request.writeHeader("Location", origin + Router.frontRoute.toUrl())
     } else {
-        Html.renderAndServe(context.system, routeModule, pageData, channelName, request, {render(_, None, pageData)})
+        Html.renderAndServe(routeModule, pageData, channelName, request, {render(_, None, pageData)})
     }
 }
 

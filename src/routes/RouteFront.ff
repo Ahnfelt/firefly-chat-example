@@ -22,7 +22,7 @@ handle(request: WebRequest[WebResponse], context: RouteContext) {
         PageData(channels)
     }
     let rpc = Rpc.newClient(context.system.httpClient(), "_todo_no_rpc_in_ssr")
-    Html.renderAndServe(context.system, routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
+    Html.renderAndServe(routeModule, pageData, "New channel", request, {render(_, rpc, pageData)})
 }
 
 browserMain(system: BrowserSystem) {
