@@ -61,15 +61,15 @@ renderForm(lux: Lux, rpc: RpcClient) {
             lux.cssClass(headingCss)
             lux.text("Create channel")
         }
-        lux.useEffect {name =>
+        lux.useJob {system, name =>
             rpc.call(CreateChannelRpc(name))
             lux.jsSystem.globalThis()->location = Router.channelRoute.toUrl(name)
-        }: channelEffect =>
+        }: channelJob =>
         lux.useState(""): name, setName =>
         lux.form {
             lux.on("submit") {event => 
                 event.preventDefault()
-                channelEffect.reload(name)
+                channelJob.rerun(name)
             }
             lux.label {
                 lux.div {
@@ -93,16 +93,16 @@ renderForm(lux: Lux, rpc: RpcClient) {
                     lux.cssClass(buttonCss)
                     lux.cssClass(cancelButtonCss)
                     lux.text("Cancel")
-                    if(!channelEffect.loading) {
+                    if(!channelJob.running) {
                         lux.set("disabled", "disabled")
                     }
                     lux.onClick {event =>
                         event.preventDefault()
-                        channelEffect.cancel()
+                        channelJob.cancel()
                     }
                 }
                 lux.button {
-                    if(name.size() == 0 || channelEffect.loading) {
+                    if(name.size() == 0 || channelJob.running) {
                         lux.set("disabled", "disabled")
                     }
                     lux.cssClass(buttonCss)
